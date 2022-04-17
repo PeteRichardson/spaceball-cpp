@@ -5,3 +5,7 @@ project(spaceball)
 add_library (spaceball STATIC
     "spaceball.cc" "spaceball.h"
 )
+
+add_subdirectory(tests)
+
+target_compile_features(spaceball PUBLIC cxx_std_20)
