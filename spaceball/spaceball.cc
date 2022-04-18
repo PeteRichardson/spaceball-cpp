@@ -13,7 +13,7 @@ Spaceball::Spaceball(const char* device_path) {
     this->device_path = device_path;
     std::cerr << "# Opening device " << device_path << endl;
 
-    const int baudRate = 57600;
+    const int baudRate = 9600;
     int sfd = openAndConfigureSerialPort(device_path, baudRate);
     if (sfd < 0) {
         if (sfd == -1) {
