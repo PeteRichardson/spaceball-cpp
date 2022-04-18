@@ -3,6 +3,6 @@
 #include "../spaceball.h"
 
 TEST(SpaceballTests, Version) {
-    Spaceball sb{};
+    Spaceball sb{"/dev/null"};
     EXPECT_EQ(sb.getVersion(), 1);
 }

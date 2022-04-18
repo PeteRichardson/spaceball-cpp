@@ -3,7 +3,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.18)
 project(spaceball)
 
 add_library (spaceball STATIC
-    "spaceball.cc" "spaceball.h"
+    "spaceball.cc" "spaceball.h" "SerialPort/SerialPort.cpp"
 )
 
 add_subdirectory(tests)
