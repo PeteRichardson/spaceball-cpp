@@ -1,13 +1,14 @@
-#include <string>
+#include "serial.h"
 
-class Spaceball {
-    static const unsigned int version = 1u;
-
+class Spaceball : public Serial {
 public:
     const char *device_path;
 
-    const unsigned int getVersion();
     Spaceball(const char*);
-    ~Spaceball(void);
     void Stream(void);
+    
+    bool initializeSpaceball();
+    ssize_t getEvent(uint8_t *);
+    void dumpEvent(const uint8_t *, const ssize_t);
+
 };

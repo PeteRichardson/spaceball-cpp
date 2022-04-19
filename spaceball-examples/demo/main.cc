@@ -2,16 +2,13 @@
 
 #include "spaceball.h"
 
-using std::cout, std::endl;
-
 int main(int argc, char*argv[]) {
-    cout << "Spaceball Demo\n";
+    std::cout << "Spaceball Demo\n";
 
-    Spaceball sb = Spaceball("/dev/tty.usbserial-AJ03ACPV");
-    cout << "version " << sb.getVersion() << endl;
+    auto sb = Spaceball("/dev/tty.usbserial-AJ03ACPV");
+    sb.connect();
 
     sb.Stream();
 
-    cout << "Spaceball Demo complete.\n";
-
+    std::cout << "Spaceball Demo complete." << std::endl;
 }
