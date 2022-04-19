@@ -8,7 +8,7 @@
         "name": "Run current target",
         "type": "lldb",
         "request": "launch",
-        "program": "${workspaceFolder}/build/${relativeFileDirname}",
+        "program": "${workspaceFolder}/build/spaceball-examples/demo/demo",
         "args": ["arg1", "arg2"],
         "stopAtEntry": false,
         "cwd": "${workspaceFolder}/build/${relativeFileDirname}",
