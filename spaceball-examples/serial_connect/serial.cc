@@ -2,28 +2,11 @@
 
 #include <iostream>
 #include <iomanip>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <sys/ioctl.h>
-#include <errno.h>
-#include <paths.h>
-#include <termios.h>
-#include <sysexits.h>
-#include <sys/param.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <time.h>
-#include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
-#include <IOKit/serial/IOSerialKeys.h>
-#include <IOKit/serial/ioss.h>
-#include <IOKit/IOBSD.h>
-using std::cout, std::endl;
 
 Serial::Serial(std::string portPath, unsigned int baud) :
     portPath{portPath}, baud{baud} {
-    cout << "# Constructing Serial(" << portPath << ")" << endl;
 }
 
 int Serial::openSerialPort()
@@ -92,8 +75,6 @@ int Serial::openSerialPort()
 }
 
 void Serial::connect() {
-    cout << "# Connecting to " << this->portPath << endl;
-
     this->fileDescriptor = openSerialPort();
     if (-1 == fileDescriptor) {
         std::cerr << "# ERROR: Could not open Spaceball on specified Serial Port: " << portPath  << std::endl;
@@ -108,8 +89,6 @@ void Serial::connect() {
 }
 
 void Serial::disconnect() {
-    cout << "# Disconnecting from " << this->portPath << endl;
-
     // Block until all written output has been sent from the device.
     // Note that this call is simply passed on to the serial device driver.
     // See tcsendbreak(3) <x-man-page://3/tcsendbreak> for details.
@@ -128,8 +107,6 @@ void Serial::disconnect() {
 }
 
 Serial::~Serial() {
-    cout << "# Destructing Serial(" << this->portPath << ")" << endl;
-
 }
 
 bool Serial::initializeSpaceball() {
