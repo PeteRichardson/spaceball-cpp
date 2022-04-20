@@ -1,4 +1,5 @@
 #include "serial.h"
+#include <cstddef>
 
 class Spaceball : public Serial {
 public:
@@ -7,8 +8,6 @@ public:
     Spaceball(const char*);
     void Stream(void);
     
-    bool initializeSpaceball();
-    ssize_t getEvent(uint8_t *);
-    void dumpEvent(const uint8_t *, const ssize_t);
-
+    ssize_t getEvent(std::byte *);
+    void dumpEvent(const std::byte *, const ssize_t);
 };
