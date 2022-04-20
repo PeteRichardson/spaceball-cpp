@@ -1,13 +1,18 @@
 #include "serial.h"
 #include <cstddef>
+#include <vector>
+#include <iostream>
+
+class SpaceballEvent : public std::vector<std::byte> {
+public:
+    char type{};
+    void Dump();
+};
+
+std::ostream& operator <<(std::ostream &, const SpaceballEvent &);
 
 class Spaceball : public Serial {
 public:
-    const char *device_path;
-
-    Spaceball(const char*);
-    void Stream(void);
-    
-    ssize_t getEvent(std::byte *);
-    void dumpEvent(const std::byte *, const ssize_t);
+    Spaceball(const char*);    
+    SpaceballEvent NextEvent(void);
 };

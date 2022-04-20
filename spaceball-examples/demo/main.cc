@@ -3,12 +3,10 @@
 #include "spaceball.h"
 
 int main(int argc, char*argv[]) {
-    std::cout << "Spaceball Demo\n";
 
     auto sb = Spaceball("/dev/tty.usbserial-AJ03ACPV");
-    sb.connect();
+    while(true)
+        std::cout << sb.NextEvent() << std::endl;
 
-    sb.Stream();
-
-    std::cout << "Spaceball Demo complete." << std::endl;
+    return(EXIT_SUCCESS);
 }

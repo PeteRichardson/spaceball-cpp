@@ -7,9 +7,7 @@
 
 Serial::Serial(std::string portPath, unsigned int baud=B9600) :
     portPath{portPath}, baud{baud} {
-}
 
-void Serial::connect() {
     int             handshake;
     struct termios  options;
     
