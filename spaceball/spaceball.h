@@ -3,11 +3,8 @@
 #include <vector>
 #include <iostream>
 
-class SpaceballEvent : public std::vector<std::byte> {
-public:
-    char type{};
-    void Dump();
-};
+using SpaceballEvent = std::vector<std::byte>;
+
 
 std::ostream& operator <<(std::ostream &, const SpaceballEvent &);
 
