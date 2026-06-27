@@ -1,6 +1,4 @@
-#include <thread>
 #include <iostream>
-#include <string>
 #include <stdlib.h>
 #include <unistd.h>
 #include <random>
@@ -8,45 +6,28 @@
 
 #include "spaceball.h"
 
-#define KEYP_MASK 0x1000
-#define KEY1_MASK 0x0001
-#define KEY2_MASK 0x0002
-#define KEY3_MASK 0x0004
-#define KEY4_MASK 0x0008
-#define KEY5_MASK 0x0100
-#define KEY6_MASK 0x0200
-#define KEY7_MASK 0x0400
-#define KEY8_MASK 0x0800
-
-#define KEYUP_MASK 0x1F0F
-
 static int answer = -1;
 
 void *spaceball_monitor(void *arg) {
     // A thread to monitor button input from the Spaceball and update
     // a static variable (answer)
     auto sb = Spaceball("/dev/tty.usbserial-AJ03ACPV");
-    bool quitting = false;
     answer = -1;
-    while (!quitting) {
+    while (true) {
         auto event = sb.NextEvent();
         if (!event)
             break;
 
-        char type = char((*event)[0]);
-        if (type == 'K') {
-            uint16_t keyflags = (int((*event)[1]) << 8)  + int((*event)[2]);
-            if (keyflags & KEYP_MASK) answer = 0;
-            if (!(keyflags & KEYUP_MASK)) continue;
-            if (keyflags & KEY1_MASK) answer = 1;
-            if (keyflags & KEY2_MASK) answer = 2;
-            if (keyflags & KEY3_MASK) answer = 3;
-            if (keyflags & KEY4_MASK) answer = 4;
-            if (keyflags & KEY5_MASK) answer = 5;
-            if (keyflags & KEY6_MASK) answer = 6;
-            if (keyflags & KEY7_MASK) answer = 7;
-            if (keyflags & KEY8_MASK) answer = 8;
-            quitting = true;
+        if (auto* ke = std::get_if<KeyEvent>(&*event)) {
+            if (ke->pick) {
+                answer = 0;
+                break;
+            }
+            bool any = false;
+            for (int i = 0; i < 8; i++) {
+                if (ke->buttons[i]) { answer = i + 1; any = true; }
+            }
+            if (any) break;
         }
     }
     return 0;
