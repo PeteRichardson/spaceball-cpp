@@ -53,17 +53,17 @@ std::ostream& operator <<(std::ostream & out, const SpaceballEvent &event) {
             // out << "Unexpected size. Expected 15.  Found " << event.size() << "\n";
             return out;
         out << type << ": ";       // event type.  Typically 'K' or 'D'
-        float period = uint16_t((event[1] << 8) | event[2]) / 16.0;
+        float period = uint16_t((int(event[1]) << 8) | int(event[2])) / 16.0;
         out << "per=" << std::setprecision(4) << std::setw(6) << std::dec << period << "ms";
         out << "  T(";
         for (int i = 0; i < 3; i++) {
-            out << std::setw(6) << int16_t(int16_t(event[2 * i + 3]) << 8 | int16_t(event[2 * i + 2]));
+            out << std::setw(6) << int16_t((int(event[2 * i + 3]) << 8) | int(event[2 * i + 4]));
             if (i < 2)
               out << ",";
         }
         out << ")   R(";
         for (int i = 3; i < 6; i++) {
-            out << std::setw(6) << int16_t(int16_t(event[2 * i + 3]) << 8 | int16_t(event[2 * i + 2]));
+            out << std::setw(6) << int16_t((int(event[2 * i + 3]) << 8) | int(event[2 * i + 4]));
             if (i < 5)
               out << ",";
         }
