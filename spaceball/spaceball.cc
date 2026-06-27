@@ -1,9 +1,18 @@
 #include "spaceball.h"
+#include <bit>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
 #include <vector>
+
+// Decode two bytes from the Spaceball's big-endian wire format.
+// Bytes are swapped for little-endian hosts (all macOS targets).
+template<typename T>
+static T be16(std::byte hi, std::byte lo) {
+    static_assert(sizeof(T) == 2);
+    return std::bit_cast<T>(std::array<std::byte, 2>{lo, hi});
+}
 
 static constexpr uint16_t KEYP_MASK = 0x1000;
 static constexpr uint16_t KEY1_MASK = 0x0001;
@@ -91,7 +100,7 @@ std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
     }
 
     if (char(raw[0]) == 'K') {
-        uint16_t keyflags = uint16_t((int(raw[1]) << 8) | int(raw[2]));
+        uint16_t keyflags = be16<uint16_t>(raw[1], raw[2]);
         return KeyEvent{
             .pick    = bool(keyflags & KEYP_MASK),
             .buttons = {
@@ -109,16 +118,16 @@ std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
         if (raw.size() != 15)
             return std::nullopt;
         return MotionEvent{
-            .period      = uint16_t((int(raw[1]) << 8) | int(raw[2])) / 16.0f,
+            .period      = be16<uint16_t>(raw[1], raw[2]) / 16.0f,
             .translation = {
-                int16_t((int(raw[3]) << 8) | int(raw[4])),
-                int16_t((int(raw[5]) << 8) | int(raw[6])),
-                int16_t((int(raw[7]) << 8) | int(raw[8])),
+                be16<int16_t>(raw[3],  raw[4]),
+                be16<int16_t>(raw[5],  raw[6]),
+                be16<int16_t>(raw[7],  raw[8]),
             },
             .rotation = {
-                int16_t((int(raw[9])  << 8) | int(raw[10])),
-                int16_t((int(raw[11]) << 8) | int(raw[12])),
-                int16_t((int(raw[13]) << 8) | int(raw[14])),
+                be16<int16_t>(raw[9],  raw[10]),
+                be16<int16_t>(raw[11], raw[12]),
+                be16<int16_t>(raw[13], raw[14]),
             }
         };
     }
