@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <sys/ioctl.h>
 
-Serial::Serial(std::string portPath, unsigned int baud=B9600) :
+Serial::Serial(std::string_view portPath, unsigned int baud=B9600) :
     portPath{portPath}, baud{baud} {
 
     int             handshake;
@@ -15,24 +15,24 @@ Serial::Serial(std::string portPath, unsigned int baud=B9600) :
     // The O_NONBLOCK flag also causes subsequent I/O on the device to be non-blocking.
     this->fileDescriptor = open(this->portPath.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (this->fileDescriptor == -1)
-        throw std::runtime_error("Error opening serial port " + portPath + " - " + strerror(errno));
+        throw std::runtime_error("Error opening serial port " + this->portPath + " - " + strerror(errno));
 
     // Prevent additional opens except by root-owned processes.
     if (ioctl(fileDescriptor, TIOCEXCL) == -1) {
         close(this->fileDescriptor);
-        throw std::runtime_error("Error setting TIOCEXCL on " + portPath + " - " + strerror(errno));
+        throw std::runtime_error("Error setting TIOCEXCL on " + this->portPath + " - " + strerror(errno));
     }
 
     // Clear the O_NONBLOCK flag so subsequent I/O will block.
     if (fcntl(fileDescriptor, F_SETFL, 0) == -1) {
         close(this->fileDescriptor);
-        throw std::runtime_error("Error clearing O_NONBLOCK on " + portPath + " - " + strerror(errno));
+        throw std::runtime_error("Error clearing O_NONBLOCK on " + this->portPath + " - " + strerror(errno));
     }
 
     // Get the current options and save them so we can restore the default settings later.
     if (tcgetattr(fileDescriptor, &gOriginalTTYAttrs) == -1) {
         close(this->fileDescriptor);
-        throw std::runtime_error("Error getting tty attributes " + portPath + " - " + strerror(errno));
+        throw std::runtime_error("Error getting tty attributes " + this->portPath + " - " + strerror(errno));
     }
     
     // Set Serial port attributes  
@@ -53,7 +53,7 @@ Serial::Serial(std::string portPath, unsigned int baud=B9600) :
     // Cause the new options to take effect immediately.
     if (tcsetattr(fileDescriptor, TCSANOW, &options) == -1) {
         close(this->fileDescriptor);
-        throw std::runtime_error("Error setting tty attributes " + portPath + " - " + strerror(errno));
+        throw std::runtime_error("Error setting tty attributes " + this->portPath + " - " + strerror(errno));
     }
 }
 

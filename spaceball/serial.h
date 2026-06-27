@@ -2,12 +2,13 @@
 #define SERIAL_H
 
 #include <string>
+#include <string_view>
 #include <termios.h>
 #include <unistd.h>
 
 class Serial {
 public:
-    Serial(std::string, unsigned int);  // path to port, baud rate (e.g. 9600)
+    Serial(std::string_view, unsigned int);  // path to port, baud rate (e.g. 9600)
     ~Serial();
 
 protected:
