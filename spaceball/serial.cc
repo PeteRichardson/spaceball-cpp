@@ -1,10 +1,9 @@
 #include "serial.h"
 
+#include <fcntl.h>
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
 #include <sys/ioctl.h>
-#include <IOKit/IOKitLib.h>
 
 Serial::Serial(std::string portPath, unsigned int baud=B9600) :
     portPath{portPath}, baud{baud} {
