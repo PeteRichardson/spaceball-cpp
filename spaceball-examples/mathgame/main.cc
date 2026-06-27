@@ -30,12 +30,12 @@ void *spaceball_monitor(void *arg) {
     answer = -1;
     while (!quitting) {
         auto event = sb.NextEvent();
-        uint16_t keyflags = (int(event[1]) << 8)  + int(event[2]);
-        
-        // check for quitting
-        char type = char(event[0]);
+        if (!event)
+            break;
+
+        char type = char((*event)[0]);
         if (type == 'K') {
-            uint16_t keyflags = (int(event[1]) << 8)  + int(event[2]);
+            uint16_t keyflags = (int((*event)[1]) << 8)  + int((*event)[2]);
             if (keyflags & KEYP_MASK) answer = 0;
             if (!(keyflags & KEYUP_MASK)) continue;
             if (keyflags & KEY1_MASK) answer = 1;

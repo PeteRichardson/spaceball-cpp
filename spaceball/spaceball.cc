@@ -95,19 +95,24 @@ Spaceball::Spaceball(const char* device_path) : Serial(device_path, 9600) {
 }
 
 
-SpaceballEvent Spaceball::NextEvent(void) {
+std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
     auto event = SpaceballEvent{};
-    ssize_t numBytes{};       // Number of bytes read or written
+    ssize_t numBytes{};
     std::byte byte{};
 
     // Find a D or K indicating start of an event
-    while (byte != std::byte{'D'} && byte != std::byte{'K'})
+    while (byte != std::byte{'D'} && byte != std::byte{'K'}) {
         numBytes = read(this->fileDescriptor, &byte, 1);
+        if (numBytes < 0)
+            return std::nullopt;
+    }
     event.push_back(byte);
-    
+
     // Read until the \r indicating end of event
     while (true) {
         numBytes = read(this->fileDescriptor, &byte, 1);
+        if (numBytes < 0)
+            return std::nullopt;
         if (byte == std::byte{'\r'})
             break;
         event.push_back(byte);

@@ -1,5 +1,6 @@
 #include "serial.h"
 #include <cstddef>
+#include <optional>
 #include <vector>
 #include <iostream>
 
@@ -10,6 +11,6 @@ std::ostream& operator <<(std::ostream &, const SpaceballEvent &);
 
 class Spaceball : public Serial {
 public:
-    Spaceball(const char*);    
-    SpaceballEvent NextEvent(void);
+    Spaceball(const char*);
+    std::optional<SpaceballEvent> NextEvent(void);
 };
