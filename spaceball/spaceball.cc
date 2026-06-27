@@ -1,6 +1,7 @@
 #include "spaceball.h"
 #include <iostream>
 #include <iomanip>
+#include <stdexcept>
 
 #define KEYP_MASK 0x1000
 #define KEY1_MASK 0x0001
@@ -89,9 +90,9 @@ Spaceball::Spaceball(const char* device_path) : Serial(device_path, 9600) {
     //   "Z\r"                # Rezero the ball
     //   "BcAc\r"             # Beep twice to indicate completion ('c' = beep, 'A' = pause)
 
-    ssize_t numBytes = write(fileDescriptor, spaceballInitString, strlen(spaceballInitString));   
-    if (numBytes != strlen(spaceballInitString))
-        throw "Error writing to Spaceball";
+    ssize_t numBytes = write(fileDescriptor, spaceballInitString, strlen(spaceballInitString));
+    if (numBytes != (ssize_t)strlen(spaceballInitString))
+        throw std::runtime_error("Error writing init string to Spaceball");
 }
 
 
