@@ -5,8 +5,8 @@
 int main(int argc, char*argv[]) {
 
     auto sb = Spaceball("/dev/cu.usbserial-AJ03ACPV");
-    while(true)
-        std::cout << sb.NextEvent() << std::endl;
+    while (auto event = sb.NextEvent())
+        std::cout << *event << std::endl;
 
     return(EXIT_SUCCESS);
 }
