@@ -1,82 +1,53 @@
 #include "spaceball.h"
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <vector>
 
-#define KEYP_MASK 0x1000
-#define KEY1_MASK 0x0001
-#define KEY2_MASK 0x0002
-#define KEY3_MASK 0x0004
-#define KEY4_MASK 0x0008
-#define KEY5_MASK 0x0100
-#define KEY6_MASK 0x0200
-#define KEY7_MASK 0x0400
-#define KEY8_MASK 0x0800
-
-// def twos_comp(val, bits):
-//     """compute the 2's compliment of int value val"""
-//     if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
-//         val = val - (1 << bits)        # compute negative value
-//     return val                         # return positive value as is
+static constexpr uint16_t KEYP_MASK = 0x1000;
+static constexpr uint16_t KEY1_MASK = 0x0001;
+static constexpr uint16_t KEY2_MASK = 0x0002;
+static constexpr uint16_t KEY3_MASK = 0x0004;
+static constexpr uint16_t KEY4_MASK = 0x0008;
+static constexpr uint16_t KEY5_MASK = 0x0100;
+static constexpr uint16_t KEY6_MASK = 0x0200;
+static constexpr uint16_t KEY7_MASK = 0x0400;
+static constexpr uint16_t KEY8_MASK = 0x0800;
 
 
-std::ostream& operator <<(std::ostream & out, const SpaceballEvent &event) {
-    char type = char(event[0]);
-    if (type == 'K') {
-        // Anytime a key is pressed or released a "K" packet is sent from the Spaceball 
-        // that indicates the new state of the nine buttons (eight buttons labelled 1-8 
-        // and the pick button which is under the skin on the far side of the ball).  In
-        // the two bytes between the "K" and the <cr> a 1 bit indicates the button is 
-        // pressed, a 0 bit indicates a button is not pressed. The packet is laid out
-        // as follows:
-        // K  010<pick button state><b8><b7><b6><b5>  0100<b4><b3><b2><b1>  \015
-        out << type << ": ";       // event type.  Typically 'K' or 'D'
-        uint16_t keyflags = (int(event[1]) << 8)  + int(event[2]);
-        out << ((keyflags & KEYP_MASK) ? 'P' : '_');
-        out << ((keyflags & KEY1_MASK) ? '1' : '_');
-        out << ((keyflags & KEY2_MASK) ? '2' : '_');
-        out << ((keyflags & KEY3_MASK) ? '3' : '_');
-        out << ((keyflags & KEY4_MASK) ? '4' : '_');
-        out << ((keyflags & KEY5_MASK) ? '5' : '_');
-        out << ((keyflags & KEY6_MASK) ? '6' : '_');
-        out << ((keyflags & KEY7_MASK) ? '7' : '_');
-        out << ((keyflags & KEY8_MASK) ? '8' : '_');
-    } else if (type == 'D') {
-        // The bytes between the "D" and the <cr> contain the Period followed by the
-        // 6 DOF data.  The Period is an unsigned 16 bit number indicating the amount of time,
-        // in 1/16ths of a millisecond, since Spaceball last sent a "D" packet.  The Period is
-        // intended for integration with the 6 DOF data that follows.  The 6 DOF data is returned
-        // in signed 16 bit 2's complement integers, translation vector first, then rotation
-        // vector.  The packet is laid out as follows:
-        //     D <period> <delta translation vector> <delta rotation vector> \015
-        if (event.size() != 15)
-            // out << "Unexpected size. Expected 15.  Found " << event.size() << "\n";
-            return out;
-        out << type << ": ";       // event type.  Typically 'K' or 'D'
-        float period = uint16_t((int(event[1]) << 8) | int(event[2])) / 16.0;
-        out << "per=" << std::setprecision(4) << std::setw(6) << std::dec << period << "ms";
-        out << "  T(";
-        for (int i = 0; i < 3; i++) {
-            out << std::setw(6) << int16_t((int(event[2 * i + 3]) << 8) | int(event[2 * i + 4]));
-            if (i < 2)
-              out << ",";
-        }
-        out << ")   R(";
-        for (int i = 3; i < 6; i++) {
-            out << std::setw(6) << int16_t((int(event[2 * i + 3]) << 8) | int(event[2 * i + 4]));
-            if (i < 5)
-              out << ",";
-        }
-        out << ")";
-    } else {
-        out << type << ": ";       // event type.  Typically 'K' or 'D'
-        out << std::hex;
-        for (int i=1; i< event.size(); i++)
-            out << std::setw(2) << std::setfill('0') << int(event[i]);
-        out << std::dec;
-    }
+std::ostream& operator<<(std::ostream& out, const KeyEvent& e) {
+    // K packet: 010<pick><b8><b7><b6><b5>  0100<b4><b3><b2><b1>
+    out << "K: ";
+    out << (e.pick ? 'P' : '_');
+    for (int i = 0; i < 8; i++)
+        out << (e.buttons[i] ? char('1' + i) : '_');
     return out;
 }
+
+std::ostream& operator<<(std::ostream& out, const MotionEvent& e) {
+    // D packet: D <period(2)> <Tx(2)> <Ty(2)> <Tz(2)> <Rx(2)> <Ry(2)> <Rz(2)> \r
+    out << "D: ";
+    out << "per=" << std::setprecision(4) << std::setw(6) << std::dec << e.period << "ms";
+    out << "  T(";
+    for (int i = 0; i < 3; i++) {
+        out << std::setw(6) << e.translation[i];
+        if (i < 2) out << ",";
+    }
+    out << ")   R(";
+    for (int i = 0; i < 3; i++) {
+        out << std::setw(6) << e.rotation[i];
+        if (i < 2) out << ",";
+    }
+    out << ")";
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const SpaceballEvent& event) {
+    std::visit([&out](const auto& e) { out << e; }, event);
+    return out;
+}
+
 
 Spaceball::Spaceball(const char* device_path) : Serial(device_path, 9600) {
     // Send initialization cmds to Spaceball
@@ -97,7 +68,7 @@ Spaceball::Spaceball(const char* device_path) : Serial(device_path, 9600) {
 
 
 std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
-    auto event = SpaceballEvent{};
+    std::vector<std::byte> raw;
     ssize_t numBytes{};
     std::byte byte{};
 
@@ -107,7 +78,7 @@ std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
         if (numBytes < 0)
             return std::nullopt;
     }
-    event.push_back(byte);
+    raw.push_back(byte);
 
     // Read until the \r indicating end of event
     while (true) {
@@ -116,7 +87,39 @@ std::optional<SpaceballEvent> Spaceball::NextEvent(void) {
             return std::nullopt;
         if (byte == std::byte{'\r'})
             break;
-        event.push_back(byte);
+        raw.push_back(byte);
     }
-    return event;
+
+    if (char(raw[0]) == 'K') {
+        uint16_t keyflags = uint16_t((int(raw[1]) << 8) | int(raw[2]));
+        return KeyEvent{
+            .pick    = bool(keyflags & KEYP_MASK),
+            .buttons = {
+                bool(keyflags & KEY1_MASK),
+                bool(keyflags & KEY2_MASK),
+                bool(keyflags & KEY3_MASK),
+                bool(keyflags & KEY4_MASK),
+                bool(keyflags & KEY5_MASK),
+                bool(keyflags & KEY6_MASK),
+                bool(keyflags & KEY7_MASK),
+                bool(keyflags & KEY8_MASK),
+            }
+        };
+    } else { // 'D'
+        if (raw.size() != 15)
+            return std::nullopt;
+        return MotionEvent{
+            .period      = uint16_t((int(raw[1]) << 8) | int(raw[2])) / 16.0f,
+            .translation = {
+                int16_t((int(raw[3]) << 8) | int(raw[4])),
+                int16_t((int(raw[5]) << 8) | int(raw[6])),
+                int16_t((int(raw[7]) << 8) | int(raw[8])),
+            },
+            .rotation = {
+                int16_t((int(raw[9])  << 8) | int(raw[10])),
+                int16_t((int(raw[11]) << 8) | int(raw[12])),
+                int16_t((int(raw[13]) << 8) | int(raw[14])),
+            }
+        };
+    }
 }
