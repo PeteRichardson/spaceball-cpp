@@ -1,8 +1,8 @@
 #include "spaceball.h"
 #include <bit>
 #include <cstring>
+#include <format>
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
 #include <vector>
 
@@ -36,19 +36,10 @@ std::ostream& operator<<(std::ostream& out, const KeyEvent& e) {
 
 std::ostream& operator<<(std::ostream& out, const MotionEvent& e) {
     // D packet: D <period(2)> <Tx(2)> <Ty(2)> <Tz(2)> <Rx(2)> <Ry(2)> <Rz(2)> \r
-    out << "D: ";
-    out << "per=" << std::setprecision(4) << std::setw(6) << std::dec << e.period << "ms";
-    out << "  T(";
-    for (int i = 0; i < 3; i++) {
-        out << std::setw(6) << e.translation[i];
-        if (i < 2) out << ",";
-    }
-    out << ")   R(";
-    for (int i = 0; i < 3; i++) {
-        out << std::setw(6) << e.rotation[i];
-        if (i < 2) out << ",";
-    }
-    out << ")";
+    out << std::format("D: per={:6.4f}ms  T({:6},{:6},{:6})   R({:6},{:6},{:6})",
+        e.period,
+        e.translation[0], e.translation[1], e.translation[2],
+        e.rotation[0],    e.rotation[1],    e.rotation[2]);
     return out;
 }
 
